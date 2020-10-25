@@ -6,9 +6,10 @@ close all
 faceopaque = false;
 icahedron_plot = true;
 
-c = 1; % m/s speed of sound
+fs = 20e3;
+c = 330; % m/s speed of sound
 
-L = 1;
+L = 3;
 nPoints = 10*4^L + 2;
 
 test_point = rand(1, 3)-0.5;
@@ -55,25 +56,30 @@ tao_test = zeros(size(mics_locs, 1), size(mics_locs, 1), size(vMat, 1));
 
 for i = 1:size(mics_locs, 1)
     for j = 1:size(mics_locs, 1)
-        tao_test(i, j, :) = (1/c)*dot(repmat(mics_locs(i, :) - mics_locs(j, :), size(vMat, 1), 1) , vMat, 2);
+        tao_test(i, j, :) = (fs/c)*dot(repmat(mics_locs(i, :) - mics_locs(j, :), size(vMat, 1), 1) , vMat, 2);
     end
 end
 
 % first mic is reference
 steering_test = zeros(size(mics_locs, 1), size(vMat, 1));
 for i = 1:size(mics_locs, 1)
-    steering_test(i, :) = (1/c)*dot(repmat(mics_locs(1, :) - mics_locs(j, :), size(vMat, 1), 1) , vMat, 2);
+    steering_test(i, :) = (fs/c)*dot(repmat(mics_locs(1, :) - mics_locs(i, :), size(vMat, 1), 1) , vMat, 2);
 end
 
 %% test
 
 test_steer = zeros(size(mics_locs, 1), 1);
+
+% test_point = vMat(15, :);
+% hold on;plot3(test_point(:, 1), test_point(:, 2), test_point(:, 3), 'rp', 'MarkerFaceColor', 'red') 
 for i = 1:size(mics_locs, 1)
-    test_steer(i) = (1/c)*dot(mics_locs(1, :) - mics_locs(i, :) , test_point, 2);
+    test_steer(i) = (fs/c)*dot(mics_locs(1, :) - mics_locs(i, :) , test_point, 2);
 end
 
-corr_test = dot(repmat(test_steer, 1, size(steering_test, 2)) , steering_test, 1);
-[~, ind_max] = max(corr_test);
+corr_test = repmat(test_steer, 1, size(steering_test, 2)) - steering_test;
+corr_test = sum(corr_test.^2).^0.5;
+% corr_test = dot(repmat(test_steer, 1, size(steering_test, 2)) , steering_test, 1);
+[~, ind_max] = min(corr_test);
 
 plot3(x(ind_max),y(ind_max),z(ind_max), 'bv', 'MarkerFaceColor', 'blue');
 
