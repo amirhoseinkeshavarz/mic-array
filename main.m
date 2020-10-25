@@ -11,13 +11,20 @@ c = 330; % m/s speed of sound
 
 L = 3;
 nPoints = 10*4^L + 2;
+test_points_NUM = 4;
 
-test_point = rand(1, 3)-0.5;
-test_point = test_point / norm(test_point);
+test_point = rand(test_points_NUM, 3)-0.5;
+for j = 1:size(test_point, 1)
+    test_point(j, :) = test_point(j, :) / norm(test_point(j, :));
+end
 %% microphones location
 theta = linspace(0, 2*pi, 9).';
 mics_locs = 0.254/2*[cos(theta), sin(theta), zeros(length(theta), 1)];
 mics_locs = mics_locs(1:end-1, :);
+mics_locs2 = 0.254/2*[cos(theta), zeros(length(theta), 1), sin(theta)];
+mics_locs2 = mics_locs2(1:end-1, :);
+
+mics_locs = [mics_locs; mics_locs2];
 
 %% creating test points
 [vMat, fMat] = spheretri(nPoints);
@@ -37,7 +44,7 @@ if icahedron_plot == true
         plot3(mics_locs(:, 1), mics_locs(:, 2), mics_locs(:, 3), 'sg', 'MarkerFaceColor', 'green')
     end
     
-    hold on;plot3(test_point(:, 1), test_point(:, 2), test_point(:, 3), 'rp', 'MarkerFaceColor', 'red') 
+    hold on;plot3(test_point(:, 1), test_point(:, 2), test_point(:, 3), 'rp', 'MarkerFaceColor', 'red')
     
     axis equal;
     view(2)
@@ -68,18 +75,22 @@ end
 
 %% test
 
-test_steer = zeros(size(mics_locs, 1), 1);
+test_steer = zeros(size(mics_locs, 1), size(test_point, 1));
 
 % test_point = vMat(15, :);
-% hold on;plot3(test_point(:, 1), test_point(:, 2), test_point(:, 3), 'rp', 'MarkerFaceColor', 'red') 
-for i = 1:size(mics_locs, 1)
-    test_steer(i) = (fs/c)*dot(mics_locs(1, :) - mics_locs(i, :) , test_point, 2);
+% hold on;plot3(test_point(:, 1), test_point(:, 2), test_point(:, 3), 'rp', 'MarkerFaceColor', 'red')
+for j = 1:size(test_point, 1)
+    for i = 1:size(mics_locs, 1)
+        test_steer(i, j) = (fs/c)*dot(mics_locs(1, :) - mics_locs(i, :) , test_point(j, :), 2);
+    end
 end
 
-corr_test = repmat(test_steer, 1, size(steering_test, 2)) - steering_test;
-corr_test = sum(corr_test.^2).^0.5;
-% corr_test = dot(repmat(test_steer, 1, size(steering_test, 2)) , steering_test, 1);
-[~, ind_max] = min(corr_test);
+for j = 1:size(test_point, 1)
+    corr_test = repmat(test_steer(:, j), 1, size(steering_test, 2)) - steering_test;
+    corr_test = sum(corr_test.^2).^0.5;
+    % corr_test = dot(repmat(test_steer, 1, size(steering_test, 2)) , steering_test, 1);
+    [~, ind_max(j)] = min(corr_test);
+end
 
 plot3(x(ind_max),y(ind_max),z(ind_max), 'bv', 'MarkerFaceColor', 'blue');
 
