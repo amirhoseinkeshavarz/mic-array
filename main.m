@@ -6,16 +6,16 @@ close all
 faceopaque = false;
 icahedron_plot = true;
 
-fs = 20e3;
-c = 330; % m/s speed of sound
+fs = 16e3;
+c = 343; % m/s speed of sound
 
 L = 3;
-nPoints = 10*4^L + 2;
-test_points_NUM = 2;
+spacePoints = 10*4^L + 2;
+test_points_NUM = 1;
 
-N = 10;
-test_vel = 0.5*(rand(test_points_NUM, 3) - 0.5);
-test_point_initial = 2*(rand(test_points_NUM, 3)-0.5);
+N = 1;
+test_vel = [0.5*(rand(test_points_NUM, 2) - 0.5) rand(test_points_NUM, 1)];
+test_point_initial = [2*(rand(test_points_NUM, 2)-0.5) rand(test_points_NUM, 1)];
 test_point = zeros(test_points_NUM, 3, N);
 test_point(:, :, 1) = test_point_initial;
 for i = 2:N
@@ -26,14 +26,15 @@ end
 theta = linspace(0, 2*pi, 9).';
 mics_locs = 0.254/2*[cos(theta), sin(theta), zeros(length(theta), 1)];
 mics_locs = mics_locs(1:end-1, :);
-mics_locs2 = 0.254/2*[cos(theta), zeros(length(theta), 1), sin(theta)];
-mics_locs2 = mics_locs2(1:end-1, :);
+% mics_locs2 = 0.254/2*[cos(theta), zeros(length(theta), 1), sin(theta)];
+% mics_locs2 = mics_locs2(1:end-1, :);
 
-mics_locs = [mics_locs; mics_locs2];
+mics_locs = [mics_locs];
 
 %% creating test points
-[vMat, fMat] = spheretri(nPoints);
-
+[vMat, fMat] = spheretri(spacePoints);
+aa = vMat(:,3)<0;
+vMat(aa,:) = [];
 %% plot
 
 if icahedron_plot == true
@@ -60,13 +61,13 @@ if icahedron_plot == true
     
 end
 
-%% finding tao(differential time delay) for test points
+%% finding tau(differential time delay) for test points
 
-tao_test = zeros(size(mics_locs, 1), size(mics_locs, 1), size(vMat, 1));
+tau_test = zeros(size(mics_locs, 1), size(mics_locs, 1), size(vMat, 1));
 
 for i = 1:size(mics_locs, 1)
     for j = 1:size(mics_locs, 1)
-        tao_test(i, j, :) = (fs/c)*dot(repmat(mics_locs(i, :) - mics_locs(j, :), size(vMat, 1), 1) , vMat, 2);
+        tau_test(i, j, :) = (fs/c)*dot(repmat(mics_locs(i, :) - mics_locs(j, :), size(vMat, 1), 1) , vMat, 2);
     end
 end
 
