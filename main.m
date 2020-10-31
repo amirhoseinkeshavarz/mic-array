@@ -11,7 +11,7 @@ c = 330; % m/s speed of sound
 
 L = 3;
 nPoints = 10*4^L + 2;
-test_points_NUM = 2;
+test_points_NUM = 1;
 
 N = 10;
 test_vel = 0.2*(rand(test_points_NUM, 3) - 0.5);
@@ -25,7 +25,7 @@ for j = 1:test_points_NUM
 end
 
 for i = 2:N
-    test_point(:, :, i) = test_point(:, :, i-1) + test_vel;
+    test_point(:, :, i) = test_point(:, :, i-1) + test_vel + 0.03*randn(size(test_vel)); % adding noise
     for j = 1:test_points_NUM
     test_point_norm(j, :, i) = test_point(j, :, i) / norm(test_point(j, :, i));
     end
@@ -109,16 +109,16 @@ sigma2_R = 0.5;
 R = sigma2_R*eye(3);
 
 % initial state
-state_initial = [test_point(:, :, 1), test_vel].';
+state_initial = [test_point_norm(:, :, 1), test_vel].';
 P_initial = eye(6);
 
 state_posterior = state_initial;
 P_posterior = P_initial;
 for iter = 1:N
-    plot3(test_point(:, 1, iter), test_point(:, 2, iter), test_point(:, 3, iter), 'rp', 'MarkerFaceColor', 'red')
+    plot3(test_point(:, 1, iter), test_point(:, 2, iter), test_point(:, 3, iter), 'rp', 'MarkerFaceColor', 'red'); hold on
     plot3(test_point_norm(:, 1, iter), test_point_norm(:, 2, iter), test_point_norm(:, 3, iter), 'mv', 'MarkerFaceColor', 'm')
-
-    
+    plot3(state_posterior(1), state_posterior(2), state_posterior(3), 'bv', 'MarkerFaceColor', 'b')
+    axis equal
     % Prediction(Step A)
     state_predicted = F*state_posterior;
     P_predicted = F*P_posterior*F' + Q;
@@ -131,7 +131,15 @@ for iter = 1:N
         d_norm(:, j) = d(:, j) / norm(d(:, j)); 
         s_norm(:, j) = s(:, j) - d(:, j) * (s(:, j).' * d(:, j) / norm(d(:, j)));
     end
+    state_predicted = [d_norm; s_norm];
     
+
+    
+    % Update (Step H)
+    K = P_predicted * H' * ( H*P_predicted*H' + R )^-1; % Kalman gain
+    
+    state_posterior = state_predicted + K * ( test_point_norm(1, :, iter).' - H*state_predicted );
+    P_posterior = P_predicted - K * H * P_predicted;
     
 %     plot3(estimated_locs(:, 1), estimated_locs(:, 2), estimated_locs(:, 3), 'bv', 'MarkerFaceColor', 'blue')
     
