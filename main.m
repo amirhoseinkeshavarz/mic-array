@@ -14,12 +14,21 @@ nPoints = 10*4^L + 2;
 test_points_NUM = 2;
 
 N = 10;
-test_vel = 0.5*(rand(test_points_NUM, 3) - 0.5);
+test_vel = 0.2*(rand(test_points_NUM, 3) - 0.5);
 test_point_initial = 2*(rand(test_points_NUM, 3)-0.5);
 test_point = zeros(test_points_NUM, 3, N);
+test_point_norm = zeros(test_points_NUM, 3, N);
+
 test_point(:, :, 1) = test_point_initial;
+for j = 1:test_points_NUM
+    test_point_norm(j, :, 1) = test_point(j, :, 1) / norm(test_point(j, :, 1));
+end
+
 for i = 2:N
     test_point(:, :, i) = test_point(:, :, i-1) + test_vel;
+    for j = 1:test_points_NUM
+    test_point_norm(j, :, i) = test_point(j, :, i) / norm(test_point(j, :, i));
+    end
 end
 
 %% microphones location
@@ -62,49 +71,20 @@ end
 
 %% finding tao(differential time delay) for test points
 
-tao_test = zeros(size(mics_locs, 1), size(mics_locs, 1), size(vMat, 1));
+% tao_test = zeros(size(mics_locs, 1), size(mics_locs, 1), size(vMat, 1));
+% 
+% for i = 1:size(mics_locs, 1)
+%     for j = 1:size(mics_locs, 1)
+%         tao_test(i, j, :) = (fs/c)*dot(repmat(mics_locs(i, :) - mics_locs(j, :), size(vMat, 1), 1) , vMat, 2);
+%     end
+% end
+% 
+% % first mic is reference
+% steering_test = zeros(size(mics_locs, 1), size(vMat, 1));
+% for i = 1:size(mics_locs, 1)
+%     steering_test(i, :) = (fs/c)*dot(repmat(mics_locs(1, :) - mics_locs(i, :), size(vMat, 1), 1) , vMat, 2);
+% end
 
-for i = 1:size(mics_locs, 1)
-    for j = 1:size(mics_locs, 1)
-        tao_test(i, j, :) = (fs/c)*dot(repmat(mics_locs(i, :) - mics_locs(j, :), size(vMat, 1), 1) , vMat, 2);
-    end
-end
-
-% first mic is reference
-steering_test = zeros(size(mics_locs, 1), size(vMat, 1));
-for i = 1:size(mics_locs, 1)
-    steering_test(i, :) = (fs/c)*dot(repmat(mics_locs(1, :) - mics_locs(i, :), size(vMat, 1), 1) , vMat, 2);
-end
-
-%%
-for iter = 1:N
-    test_point_norm = test_point(:, :, iter);
-    test_point_norm = test_point_norm / norm(test_point_norm);
-    
-    hold on;plot3(test_point(:, 1, iter), test_point(:, 2, iter), test_point(:, 3, iter), 'rp', 'MarkerFaceColor', 'red')
-    
-    test_steer = zeros(size(mics_locs, 1), size(test_point, 1));
-    
-    % test_point = vMat(15, :);
-    % hold on;plot3(test_point(:, 1), test_point(:, 2), test_point(:, 3), 'rp', 'MarkerFaceColor', 'red')
-    for j = 1:size(test_point, 1)
-        for i = 1:size(mics_locs, 1)
-            test_steer(i, j) = (fs/c)*dot(mics_locs(1, :) - mics_locs(i, :) , test_point_norm(j, :), 2);
-        end
-    end
-    
-    for j = 1:size(test_point, 1)
-        corr_test = repmat(test_steer(:, j), 1, size(steering_test, 2)) - steering_test;
-        corr_test = sum(corr_test.^2).^0.5;
-        % corr_test = dot(repmat(test_steer, 1, size(steering_test, 2)) , steering_test, 1);
-        [~, ind_max(j)] = min(corr_test);
-    end
-    
-    estimated_locs = [x(ind_max),y(ind_max),z(ind_max)];
-    
-    plot3(estimated_locs(:, 1), estimated_locs(:, 2), estimated_locs(:, 3), 'bv', 'MarkerFaceColor', 'blue')
-    
-end
 %% tracking
 
 % parameters
@@ -128,9 +108,32 @@ end
 sigma2_R = 0.5;
 R = sigma2_R*eye(3);
 
+% initial state
+state_initial = [test_point(:, :, 1), test_vel].';
+P_initial = eye(6);
 
+state_posterior = state_initial;
+P_posterior = P_initial;
+for iter = 1:N
+    plot3(test_point(:, 1, iter), test_point(:, 2, iter), test_point(:, 3, iter), 'rp', 'MarkerFaceColor', 'red')
+    plot3(test_point_norm(:, 1, iter), test_point_norm(:, 2, iter), test_point_norm(:, 3, iter), 'mv', 'MarkerFaceColor', 'm')
 
-
-
-
+    
+    % Prediction(Step A)
+    state_predicted = F*state_posterior;
+    P_predicted = F*P_posterior*F' + Q;
+    
+    % Normalization(Step B)
+    d = state_predicted(1:3, :);
+    s = state_predicted(4:6, :);
+    
+    for j = 1:test_points_NUM
+        d_norm(:, j) = d(:, j) / norm(d(:, j)); 
+        s_norm(:, j) = s(:, j) - d(:, j) * (s(:, j).' * d(:, j) / norm(d(:, j)));
+    end
+    
+    
+%     plot3(estimated_locs(:, 1), estimated_locs(:, 2), estimated_locs(:, 3), 'bv', 'MarkerFaceColor', 'blue')
+    
+end
 
