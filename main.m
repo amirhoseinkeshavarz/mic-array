@@ -1,121 +1,92 @@
-% clc
+clc
 clear
 close all
 
-%% Parameteres
-faceopaque = false;
-icahedron_plot = true;
+targetPositionIndx = [250];
+targetNum = length(targetPositionIndx);
+P = [1 1 1];
+iterNum = 1;
+initialParams
 
-[voice1 , fs] = audioread('starter.wav');
-[voice2 , ~] = audioread('heart.wav');
-[voice3 , ~] = audioread('footsteps.wav');
-time = 10; % second
-nSample = time * fs;
-voice48K = [voice1(1:nSample) voice2(1:nSample) voice3(1:nSample)];
-ds = 3;
-voice16K = voice48K(1:ds:end,:); % downsample from 48KS/s to 16 KS/s
-fs = fs/ds;
-% sound(voice16K(:,1),fs)
-
-c = 343; % m/s speed of sound
-
-L = 3;
-spacePoints = 10*4^L + 2;
-
-%% microphones location
-theta = linspace(0, 2*pi, 9).';
-mics_locs = 0.254/2*[cos(theta), sin(theta), zeros(length(theta), 1)];
-mics_locs = mics_locs(1:end-1, :);
-% mics_locs2 = 0.254/2*[cos(theta), zeros(length(theta), 1), sin(theta)];
-% mics_locs2 = mics_locs2(1:end-1, :);
-
-mics_locs = [mics_locs];
-
-%% creating test points
-[vMat, fMat] = spheretri(spacePoints);
-aa = vMat(:,3)<0;
-vMat(aa,:) = [];
+voiceImport
 
 %% Target Modelling
-N = 1;
 % test_vel = [0.5*(rand(test_points_NUM, 2) - 0.5) rand(test_points_NUM, 1)];
-targetIndx = [120  ];
-P = [1 1 1];
-test_point = vMat(targetIndx,:);
+
+targetPosition = spacePoints(targetPositionIndx,:);
 
 Display
 
-%% finding tau(differential time delay) for test points
+%% Time Difference of Microphone Pairs (TDMP)
 
-tau_test = zeros(size(mics_locs, 1), size(mics_locs, 1), size(vMat, 1));
-
-for i = 1:size(mics_locs, 1)
-    for j = 1:size(mics_locs, 1)
-        tau_test(i, j, :) = round((fs/c)*dot(repmat(mics_locs(i, :) - mics_locs(j, :), size(vMat, 1), 1) , vMat, 2));
+TDMPs = zeros(size(micPosition, 1), size(micPosition, 1), size(spacePoints, 1));
+for i = 1:size(micPosition, 1)
+    for j = 1:size(micPosition, 1)
+        TDMPs(i, j, :) = round((fs/c)*dot(repmat(micPosition(i, :) - micPosition(j, :), size(spacePoints, 1), 1) , spacePoints, 2));
     end
 end
-
-% first mic is reference
-steering_test = zeros(size(mics_locs, 1), size(vMat, 1));
-for i = 1:size(mics_locs, 1)
-    steering_test(i, :) = round((fs/c)*dot(repmat(mics_locs(1, :) - mics_locs(i, :), size(vMat, 1), 1) , vMat, 2));
-end
+TDMPs = reshape(TDMPs , size(TDMPs,1) * size(TDMPs,2),[]);
 
 %%
-for iter = 1:N
-    test_point_norm = test_point(:, :, iter);
+for iter = 1:iterNum
+    targetPositionNorm = targetPosition(:, :, iter);
     
-    hold on;plot3(test_point(:, 1, iter), test_point(:, 2, iter), test_point(:, 3, iter), 'rp', 'MarkerFaceColor', 'red')
+    hold on;plot3(targetPosition(:, 1, iter), targetPosition(:, 2, iter), targetPosition(:, 3, iter), 'rp', 'MarkerFaceColor', 'red')
     
-    targetSteer = zeros(size(mics_locs, 1), size(test_point, 1));
+    targetTD = zeros(size(micPosition, 1), size(targetPosition, 1));
     
     % test_point = vMat(15, :);
     % hold on;plot3(test_point(:, 1), test_point(:, 2), test_point(:, 3), 'rp', 'MarkerFaceColor', 'red')
-    for j = 1:size(test_point, 1)
-        for i = 1:size(mics_locs, 1)
-            test_point_norm = test_point(j,:) / norm(test_point(j,:));
-            targetSteer(i, j) = round((fs/c)*dot(mics_locs(1, :) - mics_locs(i, :) , test_point_norm, 2));
+    for j = 1:size(targetPosition, 1)
+        for i = 1:size(micPosition, 1)
+            targetPositionNorm = targetPosition(j,:) / norm(targetPosition(j,:));
+            targetTD(i, j) = round((fs/c)*dot(micPosition(1, :) - micPosition(i, :) , targetPositionNorm, 2));
         end
     end
-    signal1 = zeros(size(mics_locs,1),size(voice16K,1)+100);
-    signal = signal1;
-    for t = 1:length(targetIndx)
-        for tt = 1:8
-            signal1(tt,50+targetSteer(tt,t):size(voice16K,1)+targetSteer(tt,t)+49) = voice16K(:,t).';
+    temp = zeros(size(micPosition,1),size(voice16K,1)+100);
+    signal = temp;
+    for t = 1:length(targetPositionIndx)
+        for tt = 1:micNum
+            temp(tt , 50 + targetTD(tt,t) : size(voice16K,1) + targetTD(tt,t) + 49) = voice16K(:,t).';
         end
-        signal = signal + P(t) * signal1;
+        signal = signal + P(t) * temp;
     end
     
-    FFT = fft(signal,[],2);
-    FFTRep = repmat(FFT,8,1);
-    FFTs = [];
-    for ii = 1:8
-        FFTs = [FFTs; FFTRep(ii:8:end,:)];
+    %% Target Localization
+    for l = 1:targetNum
+        FFT = fft(signal,[],2);
+        FFTRep = repmat(FFT,micNum,1);
+        FFTRepNorm = sqrt(sum(FFTRep.^2,2));
+        FFTs = [];
+        FFTsNorm = [];
+        for ii = 1:micNum
+            FFTs = [FFTs; FFTRep(ii:micNum:end,:)];
+            FFTsNorm = [FFTsNorm ; FFTRepNorm(ii:micNum:end)];
+        end
+        FFTNorm = FFTsNorm .* FFTRepNorm;
+        GCC = fftshift(ifft(FFTs .* conj(FFTRep)./(FFTNorm),[],2),2);
+        GCC(:,[1:end/2-99, end/2+100:end]) = [];
+        
+        [~,targetTDMP] = max(GCC.');
+        targetTDMP = (targetTDMP - 100).';
+        
+        correlation = 1./sum((TDMPs - targetTDMP).^2).^0.5;
+        [~, indMax] = max(db(correlation));
+        estimatedPosition = [x(indMax),y(indMax),z(indMax)];
+        plot3(estimatedPosition(:, 1), estimatedPosition(:, 2), estimatedPosition(:, 3), 'bv', 'MarkerFaceColor', 'blue')
+        for ll = 1:8
+            signal1(ll,:) = circshift(signal(ll,:),TDMPs(ll,indMax));
+        end
+        signal11 = mean(signal1,1);
+        for ll = 1:8
+            signal22(ll,:) = circshift(signal11,-TDMPs(ll,indMax));
+        end
+        signal = signal - signal22;
     end
-    GCC = fftshift(ifft(FFTs .* conj(FFTRep),[],2),2);
-    GCC(:,[1:end/2-99, end/2+100:end]) = [];
-    
-    [~,tauEst] = max(GCC.');
-    tauEst = (tauEst - 100).';
-    
-    tau_test1 = reshape(tau_test,size(tau_test,1) * size(tau_test,2),[]);
-    diff = 1./sum((tau_test1 - tauEst).^2).^0.5;
-    [~, ind_max] = max(db(diff));
-    
-%     for j = 1:size(test_point, 1)
-%         corr_test = repmat(targetSteer(:, j), 1, size(steering_test, 2)) - steering_test;
-%         corr_test = sum(corr_test.^2).^0.5;
-%         % corr_test = dot(repmat(test_steer, 1, size(steering_test, 2)) , steering_test, 1);
-%         [~, ind_max(j)] = min(corr_test);
-%     end
-    
-    estimated_locs = [x(ind_max),y(ind_max),z(ind_max)];
-    
-    plot3(estimated_locs(:, 1), estimated_locs(:, 2), estimated_locs(:, 3), 'bv', 'MarkerFaceColor', 'blue')
-    
 end
-%% tracking
 
+%% tracking
+%{
 % parameters
 delta_T = 0.5;
 F = eye(6);
@@ -136,7 +107,7 @@ end
 
 sigma2_R = 0.5;
 R = sigma2_R*eye(3);
-
+%}
 
 
 
