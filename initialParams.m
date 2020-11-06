@@ -1,4 +1,5 @@
 micNum = 8;
+fs = 16000;
 c = 343; % m/s speed of sound
 L = 2;
 spacePointNum = 10*4^L + 2;

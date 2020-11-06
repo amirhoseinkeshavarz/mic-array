@@ -2,18 +2,12 @@ clc
 clear
 close all
 
-targetPositionIndx = [5 15];
+targetPositionIndx = [10 46];
 targetNum = length(targetPositionIndx);
-P = [1 1 1];
-frameLength = 75000;
+P = [1 1];
+frameLength = 250000;
+
 initialParams
-
-voiceImport
-
-%% Target Modelling
-% test_vel = [0.5*(rand(test_points_NUM, 2) - 0.5) rand(test_points_NUM, 1)];
-
-targetPosition = spacePoints(targetPositionIndx,:);
 
 Display
 
@@ -27,8 +21,13 @@ for i = 1:size(micPosition, 1)
 end
 TDMPs = reshape(TDMPs , size(TDMPs,1) * size(TDMPs,2),[]);
 
-%% Received Signal
-targetPositionNorm = targetPosition;
+%% Target Modelling
+
+voiceImport
+microphoneDirectivity
+targetPosition = spacePoints(targetPositionIndx,:);
+
+% Received Signal
 hold on;plot3(targetPosition(:, 1), targetPosition(:, 2), targetPosition(:, 3), 'rp', 'MarkerFaceColor', 'red')
 targetTD = zeros(size(micPosition, 1), size(targetPosition, 1));
 for j = 1:size(targetPosition, 1)
@@ -41,7 +40,7 @@ temp = zeros(size(micPosition,1),size(voice16K,1)+100);
 signal = temp;
 for t = 1:length(targetPositionIndx)
     for tt = 1:micNum
-        temp(tt , 50 + targetTD(tt,t) : size(voice16K,1) + targetTD(tt,t) + 49) = voice16K(:,t).';
+        temp(tt , 50 + targetTD(tt,t) : size(voice16K,1) + targetTD(tt,t) + 49) = gain(tt,targetPositionIndx(t)) * voice16K(:,t).';
     end
     signal = signal + P(t) * temp;
 end
@@ -90,11 +89,19 @@ for l = 1:targetNum
     
     [~,targetTDMP] = max(GCC.');
     targetTDMP = (targetTDMP - 100).';
-    
-    correlation = 1./sum((TDMPs - targetTDMP).^2).^0.5;
+    for kk = 1:size(TDMPs,2)
+        if ~isempty(TDMPs(zeta(:,kk),kk))
+            correlation(kk) = 1./sum((TDMPs(zeta(:,kk),kk) - targetTDMP(zeta(:,kk))).^2).^0.5;
+        else
+            correlation(kk) = 0;
+        end
+    end
+
+%         correlation = 1./sum((TDMPs - targetTDMP).^2).^0.5;
     [~ , indMax(l)] = max(abs(correlation));
     estimatedPosition = [x(indMax(l)),y(indMax(l)),z(indMax(l))];
     plot3(estimatedPosition(:, 1), estimatedPosition(:, 2), estimatedPosition(:, 3), 'bv', 'MarkerFaceColor', 'blue')
+    
     for ll = 1:8
         signal1(ll,:) = circshift(signal(ll,:),TDMPs(ll,indMax(l)));
     end
