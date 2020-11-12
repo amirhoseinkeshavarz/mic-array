@@ -31,6 +31,11 @@ movement = [0.001 +0.002 +0.01; -0.01 +0.02 +0.01];
 for t = 1:targetNum
     targetMovement(:,:,t) = [linspace(0,movement(t,1),frameNumber).' linspace(0,movement(t,2),frameNumber).' linspace(0,movement(t,3),frameNumber).'];
 end
+
+
+    MSWCalib;
+
+
 for f = 1:frameNumber
     % Received Signal
     hold on;plot3(targetPosition(:, 1), targetPosition(:, 2), targetPosition(:, 3), 'rp', 'MarkerFaceColor', 'red')
@@ -56,8 +61,8 @@ for f = 1:frameNumber
     SoundSourceLocalization
     targetPosition = targetPosition + squeeze(targetMovement(f,:,:)).';
 end
-indMax
-Ed
+[indMax Ed]
+
 for ii = 1:targetNum
     estPosition(:,:,ii) = spacePoints(indMax(:,ii),:);
 end
