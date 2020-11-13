@@ -6,7 +6,7 @@ targetPositionIndx = [46 10];
 targetNum = length(targetPositionIndx);
 P = [1 1];
 frameLength = 256;
-frameNumber = 10;
+frameNumber = 100;
 
 initialParams
 
@@ -27,9 +27,9 @@ TDMPs = reshape(TDMPs , size(TDMPs,1) * size(TDMPs,2),[]);
 voiceImport
 microphoneDirectivity
 targetPosition = spacePoints(targetPositionIndx,:);
-movement = 10*[0.001 +0.002 +0.01; -0.01 +0.02 +0.01];
+movement = 2*[0.001 +0.5 +0.01; -0.5 +0.0002 +0.001];
 for t = 1:targetNum
-    targetMovement(:,:,t) = [linspace(0,movement(t,1),frameNumber).' linspace(0,movement(t,2),frameNumber).' linspace(0,movement(t,3),frameNumber).'];
+    targetMovement(t,:,:) = [linspace(0,movement(t,1),frameNumber).' linspace(0,movement(t,2),frameNumber).' linspace(0,movement(t,3),frameNumber).']';
 end
 for f = 1:frameNumber
     % Received Signal
@@ -54,7 +54,7 @@ for f = 1:frameNumber
     %% Target Localization 1
     
     SoundSourceLocalization
-    targetPosition = targetPosition + squeeze(targetMovement(f,:,:)).';
+    targetPosition = targetPosition + (targetMovement(:,:,f));
 end
 indMax
 Ed

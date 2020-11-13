@@ -1,6 +1,6 @@
 
-[voice1 , fs] = audioread('starter.wav');
-[voice2 , fs] = audioread('embedadapt_1sample.wav');
+[voice1 , fs] = audioread('embedadapt_1sample.wav');
+[voice2 , fs] = audioread('starter.wav');
 
 lengthMin = min(length(voice1),length(voice2));
 ds = 3;
