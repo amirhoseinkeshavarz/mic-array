@@ -9,10 +9,11 @@ for l = 1:targetNum
         FFTsNorm = [FFTsNorm ; FFTRepNorm(ii:micNum:end)];
     end
     FFTNorm = FFTsNorm .* FFTRepNorm;
-    GCC = fftshift(ifft(FFTs .* conj(FFTRep)./(FFTNorm),[],2),2);
-    GCC(:,[1:end/2-99, end/2+100:end]) = [];
-    
-    [~,targetTDMP] = max(GCC.');
+    pqCrossCorrelation = fftshift(ifft(FFTs .* conj(FFTRep)./(FFTNorm),[],2),2);
+    MSWFilter;
+    pqCrossCorrelationMswFilter(:,[1:end/2-99, end/2+100:end]) = [];
+
+    [~,targetTDMP] = max(pqCrossCorrelationMswFilter.');
     targetTDMP = (targetTDMP - 100).';
     for kk = 1:size(TDMPs,2)
         if ~isempty(TDMPs(zeta(:,kk),kk))

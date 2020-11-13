@@ -59,8 +59,8 @@ for f = 1:frameNumber
     targetPositionAll(f, :, :) = targetPosition;
     targetPosition = targetPosition + movement;
 end
-indMax
-Ed
+[indMax Ed]
+
 for ii = 1:targetNum
     estPosition(:,:,ii) = spacePoints(indMax(:,ii),:);
 end
