@@ -27,15 +27,15 @@ TDMPs = reshape(TDMPs , size(TDMPs,1) * size(TDMPs,2),[]);
 voiceImport
 microphoneDirectivity
 targetPosition = spacePoints(targetPositionIndx,:);
-movement = 2*[0.3 -0.05 +0.01; -0.05 +0.05 +0.001];
-for t = 1:targetNum
-    targetMovement(t,:,:) = [linspace(0,movement(t,1),frameNumber).' linspace(0,movement(t,2),frameNumber).' linspace(0,movement(t,3),frameNumber).']';
-end
+movement = 1*[0.3 -0.05 +0.01; -0.05 +0.05 +0.001];
+% for t = 1:targetNum
+%     targetMovement(t,:,:) = [linspace(0,movement(t,1),frameNumber).' linspace(0,movement(t,2),frameNumber).' linspace(0,movement(t,3),frameNumber).']';
+% end
 for f = 1:frameNumber
     % Received Signal
     hold on;
-    plot3(targetPosition(1, 1), targetPosition(1, 2), targetPosition(1, 3), 'mp', 'MarkerFaceColor', 'm')
-    plot3(targetPosition(2, 1), targetPosition(2, 2), targetPosition(2, 3), 'cp', 'MarkerFaceColor', 'c')
+    plot3(targetPosition(1, 1), targetPosition(1, 2), targetPosition(1, 3), 'mp', 'MarkerFaceColor', 'm') ; axis equal
+    plot3(targetPosition(2, 1), targetPosition(2, 2), targetPosition(2, 3), 'cp', 'MarkerFaceColor', 'c') ; axis equal
     targetTD = zeros(size(micPosition, 1), size(targetPosition, 1));
     for j = 1:size(targetPosition, 1)
         for i = 1:size(micPosition, 1)
@@ -57,7 +57,7 @@ for f = 1:frameNumber
     
     SoundSourceLocalization
     targetPositionAll(f, :, :) = targetPosition;
-    targetPosition = targetPosition + (targetMovement(:,:,f));
+    targetPosition = targetPosition + movement;
 end
 indMax
 Ed
