@@ -25,7 +25,7 @@ for l = 1:targetNum
 %         correlation = 1./sum((TDMPs - targetTDMP).^2).^0.5;
     [~ , indMax(f,l)] = max(abs(correlation));
     estimatedPosition = [x(indMax(f,l)),y(indMax(f,l)),z(indMax(f,l))];
-    plot3(estimatedPosition(:, 1), estimatedPosition(:, 2), estimatedPosition(:, 3), 'bv', 'MarkerFaceColor', 'blue')
+%     plot3(estimatedPosition(:, 1), estimatedPosition(:, 2), estimatedPosition(:, 3), 'bv', 'MarkerFaceColor', 'blue')
     
     for ll = 1:8
         signal1(ll,:) = circshift(signal(ll,:),TDMPs(ll,indMax(f,l)));
