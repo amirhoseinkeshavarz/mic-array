@@ -229,18 +229,16 @@ for iter = 1:frameNumber
     % Adding and removing sources (Step G)
     
     
-%     % Update (Step H)
-%     for iTrack = 1:nTarget
-%         K(:, :, iTrack) = P_predicted(:, :, iTrack) * H' * ( H*P_predicted(:, :, iTrack)*H' + R )^-1; % Kalman gain
-%         [~, vhat(iTrack)] = max(Prob_i_KSI);
-%         
-%         
-%         state_posterior(iTrack, :) = state_predicted(iTrack, :) + K(:, :, iTrack) * ( estPosition(iter, :, vhat(iTrack)).' - H*state_predicted );
-%         P_posterior(:, :, iTrack) = P_predicted(:, :, iTrack) - K(:, :, iTrack) * H * P_predicted(:, :, iTrack);
-%     end
-%     
+    % Update (Step H)
+    for iTrack = 1:nTarget
+        K(:, :, iTrack) = P_predicted(:, :, iTrack) * H' * ( H*P_predicted(:, :, iTrack)*H' + R )^-1; % Kalman gain
+        [~, vhat(iTrack)] = max(Prob_i_KSI);
+        
+        
+        state_posterior(:, iTrack) = state_predicted(:, iTrack) + Prob_i_KSI(iTrack) * K(:, :, iTrack) * ( estPosition(iter, :, vhat(iTrack)).' - H*state_predicted(:, iTrack) );
+        P_posterior(:, :, iTrack) = P_predicted(:, :, iTrack) - Prob_i_KSI(iTrack) * K(:, :, iTrack) * H * P_predicted(:, :, iTrack);
+    end
 
-    
     %     plot3(estimated_locs(:, 1), estimated_locs(:, 2), estimated_locs(:, 3), 'bv', 'MarkerFaceColor', 'blue')
     
 end
