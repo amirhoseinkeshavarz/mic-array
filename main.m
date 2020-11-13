@@ -230,7 +230,9 @@ for iter = 1:frameNumber
     
     
     % Update (Step H)
-    K = P_predicted * H' * ( H*P_predicted*H' + R )^-1; % Kalman gain
+    for iTrack = 1:nTarget
+         K(:, :, iTrack) = P_predicted(:, :, iTrack) * H' * ( H*P_predicted(:, :, iTrack)*H' + R )^-1; % Kalman gain
+    end
     
     state_posterior = state_predicted + K * ( test_point_norm(1, :, iter).' - H*state_predicted );
     P_posterior = P_predicted - K * H * P_predicted;
