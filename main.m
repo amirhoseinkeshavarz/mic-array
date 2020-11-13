@@ -6,7 +6,7 @@ targetPositionIndx = [46 10];
 targetNum = length(targetPositionIndx);
 P = [1 1];
 frameLength = 256;
-frameNumber = 100;
+frameNumber = 10;
 
 initialParams
 
@@ -27,13 +27,15 @@ TDMPs = reshape(TDMPs , size(TDMPs,1) * size(TDMPs,2),[]);
 voiceImport
 microphoneDirectivity
 targetPosition = spacePoints(targetPositionIndx,:);
-movement = 2*[0.001 +0.5 +0.01; -0.5 +0.0002 +0.001];
+movement = 2*[0.3 -0.05 +0.01; -0.05 +0.05 +0.001];
 for t = 1:targetNum
     targetMovement(t,:,:) = [linspace(0,movement(t,1),frameNumber).' linspace(0,movement(t,2),frameNumber).' linspace(0,movement(t,3),frameNumber).']';
 end
 for f = 1:frameNumber
     % Received Signal
-%     hold on;plot3(targetPosition(:, 1), targetPosition(:, 2), targetPosition(:, 3), 'rp', 'MarkerFaceColor', 'red')
+    hold on;
+    plot3(targetPosition(1, 1), targetPosition(1, 2), targetPosition(1, 3), 'mp', 'MarkerFaceColor', 'm')
+    plot3(targetPosition(2, 1), targetPosition(2, 2), targetPosition(2, 3), 'cp', 'MarkerFaceColor', 'c')
     targetTD = zeros(size(micPosition, 1), size(targetPosition, 1));
     for j = 1:size(targetPosition, 1)
         for i = 1:size(micPosition, 1)
@@ -54,6 +56,7 @@ for f = 1:frameNumber
     %% Target Localization 1
     
     SoundSourceLocalization
+    targetPositionAll(f, :, :) = targetPosition;
     targetPosition = targetPosition + (targetMovement(:,:,f));
 end
 indMax
@@ -64,6 +67,18 @@ end
 nTarget = size(estPosition, 3);
 nMeasurement = size(estPosition, 3);
 
+%% test target modeling
+for iFrame = 1:size(targetPositionAll, 1)
+    for iTarget = 1:size(targetPositionAll, 2)
+    estPosition(iFrame, :, iTarget) = targetPositionAll(iFrame, iTarget, :) / ...
+                                norm(squeeze(targetPositionAll(iFrame, iTarget, :)));
+    end
+end
+Ed = [4*ones(size(targetPositionAll, 1), 1), 2*ones(size(targetPositionAll, 1), 1)];
+
+
+
+
 %% tracking
 
 % parameters
@@ -73,7 +88,7 @@ for i = 4:6
     F(i-3, i) = delta_T;
 end
 
-sigma2_Q = 0.5;
+sigma2_Q = 0.000009;
 Q = zeros(6);
 for i = 4:6
     Q(i, i) =  sigma2_Q;
@@ -84,7 +99,7 @@ for i = 1:3
     H(i, i) = 1;
 end
 
-sigma2_R = 0.5;
+sigma2_R = 0.0015;
 R = sigma2_R*eye(3);
 
 % initial state
@@ -98,13 +113,11 @@ P_posterior = P_initial;
 nTarget; % this should be set during tracking
 nMeasurement; % this should be set during tracking
 for iter = 1:frameNumber
-%     plot3(test_point(:, 1, iter), test_point(:, 2, iter), test_point(:, 3, iter), 'rp', 'MarkerFaceColor', 'red'); hold on
-%     plot3(test_point_norm(:, 1, iter), test_point_norm(:, 2, iter), test_point_norm(:, 3, iter), 'mv', 'MarkerFaceColor', 'm')
     plot3(squeeze(estPosition(iter, 1, 1)), squeeze(estPosition(iter, 2, 1)), squeeze(estPosition(iter, 3, 1)), 'mv', 'MarkerFaceColor', 'm')
     plot3(squeeze(estPosition(iter, 1, 2)), squeeze(estPosition(iter, 2, 2)), squeeze(estPosition(iter, 3, 2)), 'cv', 'MarkerFaceColor', 'c')
 
-    plot3(state_posterior(1, 1), state_posterior(2, 1), state_posterior(3, 1), 'mo')
-    plot3(state_posterior(1, 2), state_posterior(2, 2), state_posterior(3, 2), 'co')
+    plot3(state_posterior(1, 1), state_posterior(2, 1), state_posterior(3, 1), 'm-o')
+    plot3(state_posterior(1, 2), state_posterior(2, 2), state_posterior(3, 2), 'c-o')
 
     % Prediction(Step A)
     state_predicted = F*state_posterior;
@@ -161,12 +174,12 @@ for iter = 1:frameNumber
         end
     end
  
-    mu_Inactive = 0.5; % reconsider
-    sigma_Inactive = 0.5; % reconsider
+    mu_Inactive = 0.1; % reconsider
+    sigma_Inactive = 0.0025; % reconsider
     Prob_LAMBDA_Inactive = @(LAMBDA) pdf('Normal', LAMBDA, mu_Inactive, sigma_Inactive);
     
-    mu_Active = 0.5; % reconsider
-    sigma_Active = 0.5; % reconsider
+    mu_Active = 0.2; % reconsider
+    sigma_Active = 0.0025; % reconsider
     Prob_LAMBDA_Active = @(LAMBDA)  pdf('Normal', LAMBDA, mu_Active, sigma_Active);
     
     Prob_LAMBDA_Diffused = 0.5;  % reconsider
@@ -190,9 +203,9 @@ for iter = 1:frameNumber
     Prob_KSI_Fg = prod(Prob_ksiv_fgv, 2);
     
     % Prior probability(Step E)
-    P_new = 0.5; % reconsider
-    P_false = 0.5; % reconsider
-    P_track = 0.5; % reconsider
+    P_new = 0.1; % reconsider
+    P_false = 0.1; % reconsider
+    P_track = 0.8; % reconsider
     
     for g = 1:size(Fg, 1)
         for v = 1:nMeasurement
