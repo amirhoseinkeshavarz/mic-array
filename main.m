@@ -100,8 +100,12 @@ nMeasurement; % this should be set during tracking
 for iter = 1:frameNumber
 %     plot3(test_point(:, 1, iter), test_point(:, 2, iter), test_point(:, 3, iter), 'rp', 'MarkerFaceColor', 'red'); hold on
 %     plot3(test_point_norm(:, 1, iter), test_point_norm(:, 2, iter), test_point_norm(:, 3, iter), 'mv', 'MarkerFaceColor', 'm')
-    plot3(squeeze(estPosition(iter, 1, :)), squeeze(estPosition(iter, 2, :)), squeeze(estPosition(iter, 3, :)), 'mv', 'MarkerFaceColor', 'm')
-    plot3(state_posterior(1, :), state_posterior(2, :), state_posterior(3, :), 'bo', 'MarkerFaceColor', 'b')
+    plot3(squeeze(estPosition(iter, 1, 1)), squeeze(estPosition(iter, 2, 1)), squeeze(estPosition(iter, 3, 1)), 'mv', 'MarkerFaceColor', 'm')
+    plot3(squeeze(estPosition(iter, 1, 2)), squeeze(estPosition(iter, 2, 2)), squeeze(estPosition(iter, 3, 2)), 'cv', 'MarkerFaceColor', 'c')
+
+    plot3(state_posterior(1, 1), state_posterior(2, 1), state_posterior(3, 1), 'mo')
+    plot3(state_posterior(1, 2), state_posterior(2, 2), state_posterior(3, 2), 'co')
+
     % Prediction(Step A)
     state_predicted = F*state_posterior;
     for iTarget = 1:nTarget
