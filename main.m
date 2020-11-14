@@ -28,6 +28,7 @@ voiceImport
 microphoneDirectivity
 targetPosition = spacePoints(targetPositionIndx,:);
 movement = 1*[0.3 -0.05 +0.01; -0.05 +0.05 +0.001];
+MSWCalib;
 % for t = 1:targetNum
 %     targetMovement(t,:,:) = [linspace(0,movement(t,1),frameNumber).' linspace(0,movement(t,2),frameNumber).' linspace(0,movement(t,3),frameNumber).']';
 % end
