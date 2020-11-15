@@ -34,8 +34,8 @@ movement = 1*[0.3 -0.05 +0.01; -0.05 +0.05 +0.001];
 for f = 1:frameNumber
     % Received Signal
     hold on;
-    plot3(targetPosition(1, 1), targetPosition(1, 2), targetPosition(1, 3), 'mp', 'MarkerFaceColor', 'm') ; axis equal
-    plot3(targetPosition(2, 1), targetPosition(2, 2), targetPosition(2, 3), 'cp', 'MarkerFaceColor', 'c') ; axis equal
+%     plot3(targetPosition(1, 1), targetPosition(1, 2), targetPosition(1, 3), 'mp', 'MarkerFaceColor', 'm') ; axis equal
+%     plot3(targetPosition(2, 1), targetPosition(2, 2), targetPosition(2, 3), 'cp', 'MarkerFaceColor', 'c') ; axis equal
     targetTD = zeros(size(micPosition, 1), size(targetPosition, 1));
     for j = 1:size(targetPosition, 1)
         for i = 1:size(micPosition, 1)
@@ -113,11 +113,12 @@ P_posterior = P_initial;
 nTarget; % this should be set during tracking
 nMeasurement; % this should be set during tracking
 for iter = 1:frameNumber
-    plot3(squeeze(estPosition(iter, 1, 1)), squeeze(estPosition(iter, 2, 1)), squeeze(estPosition(iter, 3, 1)), 'mv', 'MarkerFaceColor', 'm')
-    plot3(squeeze(estPosition(iter, 1, 2)), squeeze(estPosition(iter, 2, 2)), squeeze(estPosition(iter, 3, 2)), 'cv', 'MarkerFaceColor', 'c')
+%     plot3(squeeze(estPosition(iter, 1, 1)), squeeze(estPosition(iter, 2, 1)), squeeze(estPosition(iter, 3, 1)), 'mv', 'MarkerFaceColor', 'm')
+%     plot3(squeeze(estPosition(iter, 1, 2)), squeeze(estPosition(iter, 2, 2)), squeeze(estPosition(iter, 3, 2)), 'cv', 'MarkerFaceColor', 'c')
 
-    plot3(state_posterior(1, 1), state_posterior(2, 1), state_posterior(3, 1), 'm-o')
-    plot3(state_posterior(1, 2), state_posterior(2, 2), state_posterior(3, 2), 'c-o')
+%     plot3(state_posterior(1, 1), state_posterior(2, 1), state_posterior(3, 1), 'm-o')
+%     plot3(state_posterior(1, 2), state_posterior(2, 2), state_posterior(3, 2), 'c-o')
+    state_posteriorAll(:, :, iter) = state_posterior;
 
     % Prediction(Step A)
     state_predicted = F*state_posterior;
@@ -260,6 +261,23 @@ for iter = 1:frameNumber
     %     plot3(estimated_locs(:, 1), estimated_locs(:, 2), estimated_locs(:, 3), 'bv', 'MarkerFaceColor', 'blue')
     
 end
+
+plot3(squeeze(state_posteriorAll(1, 1, :)), squeeze(state_posteriorAll(2, 1, :)), ...
+    squeeze(state_posteriorAll(3, 1, :)), 'm-o', 'MarkerFaceColor', [0.9290 0.6940 0.1250], ...
+    'MarkerSize', 8, 'DisplayName', 'Track1')
+                                        
+plot3(squeeze(state_posteriorAll(1, 2, :)), squeeze(state_posteriorAll(2, 2, :)), ...
+    squeeze(state_posteriorAll(3, 2, :)), 'c-o', 'MarkerFaceColor', [0.8500 0.3250 0.0980], ...
+    'MarkerSize', 8, 'DisplayName', 'Track2')
+
+
+plot3(squeeze(estPosition(:, 1, 1)), squeeze(estPosition(:, 2, 1)), squeeze(estPosition(:, 3, 1)), 'm-v', 'MarkerFaceColor', 'm', 'DisplayName', 'estimated position 1')
+plot3(squeeze(estPosition(:, 1, 2)), squeeze(estPosition(:, 2, 2)), squeeze(estPosition(:, 3, 2)), 'c-v', 'MarkerFaceColor', 'c', 'DisplayName', 'estimated position 2')
+
+plot3(squeeze(targetPositionAll(:, 1, 1)), squeeze(targetPositionAll(:, 1, 2)), squeeze(targetPositionAll(:, 1, 3)), 'm-p', 'MarkerFaceColor', 'm', 'DisplayName', 'target location 1') ; axis equal
+plot3(squeeze(targetPositionAll(:, 2, 1)), squeeze(targetPositionAll(:, 2, 2)), squeeze(targetPositionAll(:, 2, 3)), 'c-p', 'MarkerFaceColor', 'c', 'DisplayName', 'target location 2') ;
+
+legend('show')
 
 
 
