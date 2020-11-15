@@ -68,13 +68,15 @@ nTarget = size(estPosition, 3);
 nMeasurement = size(estPosition, 3);
 
 %% test target modeling
-for iFrame = 1:size(targetPositionAll, 1)
-    for iTarget = 1:size(targetPositionAll, 2)
-    estPosition(iFrame, :, iTarget) = targetPositionAll(iFrame, iTarget, :) / ...
-                                norm(squeeze(targetPositionAll(iFrame, iTarget, :)));
-    end
-end
+% for iFrame = 1:size(targetPositionAll, 1)
+%     for iTarget = 1:size(targetPositionAll, 2)
+%     estPosition(iFrame, :, iTarget) = targetPositionAll(iFrame, iTarget, :) / ...
+%                                 norm(squeeze(targetPositionAll(iFrame, iTarget, :)));
+%     end
+% end
 Ed = [0.2*ones(size(targetPositionAll, 1), 1), 0.2*ones(size(targetPositionAll, 1), 1)];
+% Ed(5, 1) = 0.01;
+% estPosition(5, :, 1) = 2*estPosition(5, :, 1);
 
 
 %% tracking
