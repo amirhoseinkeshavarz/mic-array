@@ -27,11 +27,11 @@ for l = 1:targetNum
     estimatedPosition = [x(indMax(f,l)),y(indMax(f,l)),z(indMax(f,l))];
 %     plot3(estimatedPosition(:, 1), estimatedPosition(:, 2), estimatedPosition(:, 3), 'bv', 'MarkerFaceColor', 'blue')
     
-    for ll = 1:8
+    for ll = 1:micNum
         signal1(ll,:) = circshift(signal(ll,:),TDMPs(ll,indMax(f,l)));
     end
     signal11 = mean(signal1,1);
-    for ll = 1:8
+    for ll = 1:micNum
         signal22(ll,:) = circshift(signal11,-TDMPs(ll,indMax(f,l)));
     end
     signal = signal - signal22;
