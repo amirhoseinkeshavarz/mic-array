@@ -5,7 +5,7 @@ close all
 targetPositionIndx = [46 10];
 targetNum = length(targetPositionIndx);
 P = [1 1];
-frameLength = 256;
+frameLength = 2000;
 frameNumber = 10;
 
 initialParams
@@ -27,7 +27,7 @@ TDMPs = reshape(TDMPs , size(TDMPs,1) * size(TDMPs,2),[]);
 voiceImport
 microphoneDirectivity
 targetPosition = spacePoints(targetPositionIndx,:);
-movement = 1*[0.3 -0.05 +0.01; -0.05 +0.05 +0.001];
+movement = 1*[0.09 -0.005 +0.01; -0.005 +0.09 +0.001];
 % for t = 1:targetNum
 %     targetMovement(t,:,:) = [linspace(0,movement(t,1),frameNumber).' linspace(0,movement(t,2),frameNumber).' linspace(0,movement(t,3),frameNumber).']';
 % end
@@ -59,8 +59,7 @@ for f = 1:frameNumber
     targetPositionAll(f, :, :) = targetPosition;
     targetPosition = targetPosition + movement;
 end
-indMax
-Ed
+[indMax Ed]
 for ii = 1:targetNum
     estPosition(:,:,ii) = spacePoints(indMax(:,ii),:);
 end
@@ -265,16 +264,16 @@ for iter = 1:frameNumber
 end
 
 plot3(squeeze(state_posteriorAll(1, 1, :)), squeeze(state_posteriorAll(2, 1, :)), ...
-    squeeze(state_posteriorAll(3, 1, :)), 'm-o', 'MarkerFaceColor', [0.9290 0.6940 0.1250], ...
+    squeeze(state_posteriorAll(3, 1, :)), 'm-o', 'MarkerFaceColor', [0.25 0.34 0.28], ...
     'MarkerSize', 8, 'DisplayName', 'Track1')
                                         
 plot3(squeeze(state_posteriorAll(1, 2, :)), squeeze(state_posteriorAll(2, 2, :)), ...
-    squeeze(state_posteriorAll(3, 2, :)), 'c-o', 'MarkerFaceColor', [0.8500 0.3250 0.0980], ...
+    squeeze(state_posteriorAll(3, 2, :)), 'c-o', 'MarkerFaceColor', [0.85 0.3 0.1], ...
     'MarkerSize', 8, 'DisplayName', 'Track2')
 
 
-plot3(squeeze(estPosition(:, 1, 1)), squeeze(estPosition(:, 2, 1)), squeeze(estPosition(:, 3, 1)), 'm-v', 'MarkerFaceColor', 'm', 'DisplayName', 'estimated position 1')
-plot3(squeeze(estPosition(:, 1, 2)), squeeze(estPosition(:, 2, 2)), squeeze(estPosition(:, 3, 2)), 'c-v', 'MarkerFaceColor', 'c', 'DisplayName', 'estimated position 2')
+plot3(squeeze(estPosition(:, 1, 1)), squeeze(estPosition(:, 2, 1)), squeeze(estPosition(:, 3, 1)), 'mv', 'MarkerFaceColor', 'm', 'DisplayName', 'estimated position 1')
+plot3(squeeze(estPosition(:, 1, 2)), squeeze(estPosition(:, 2, 2)), squeeze(estPosition(:, 3, 2)), 'cv', 'MarkerFaceColor', 'c', 'DisplayName', 'estimated position 2')
 
 plot3(squeeze(targetPositionAll(:, 1, 1)), squeeze(targetPositionAll(:, 1, 2)), squeeze(targetPositionAll(:, 1, 3)), 'm-p', 'MarkerFaceColor', 'm', 'DisplayName', 'target location 1') ; axis equal
 plot3(squeeze(targetPositionAll(:, 2, 1)), squeeze(targetPositionAll(:, 2, 2)), squeeze(targetPositionAll(:, 2, 3)), 'c-p', 'MarkerFaceColor', 'c', 'DisplayName', 'target location 2') ;

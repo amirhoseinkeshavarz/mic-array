@@ -1,7 +1,7 @@
 micNum = 8;
 fs = 16000;
 c = 343; % m/s speed of sound
-L = 3;
+L = 4;
 spacePointNum = 10*4^L + 2;
 %% microphones location
 theta = (0 : 2*pi/micNum : 2*pi - 2*pi/micNum)';
