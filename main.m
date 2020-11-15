@@ -74,15 +74,12 @@ for iFrame = 1:size(targetPositionAll, 1)
                                 norm(squeeze(targetPositionAll(iFrame, iTarget, :)));
     end
 end
-Ed = [4*ones(size(targetPositionAll, 1), 1), 2*ones(size(targetPositionAll, 1), 1)];
-
-
+Ed = [0.2*ones(size(targetPositionAll, 1), 1), 0.2*ones(size(targetPositionAll, 1), 1)];
 
 
 %% tracking
-
 % parameters
-delta_T = 0.5;
+delta_T = 1;
 F = eye(6);
 for i = 4:6
     F(i-3, i) = delta_T;
@@ -101,6 +98,9 @@ end
 
 sigma2_R = 0.0015;
 R = sigma2_R*eye(3);
+
+sigma2_R_Prob = 0.003;
+R_prob = sigma2_R_Prob*eye(3);
 
 % initial state
 state_initial = [squeeze(estPosition(1, :, :)).', movement].';
@@ -131,7 +131,7 @@ for iter = 1:frameNumber
     
     for j = 1:nTarget
         d_norm(:, j) = d(:, j) / norm(d(:, j));
-        s_norm(:, j) = s(:, j) - d(:, j) * (s(:, j).' * d(:, j) / norm(d(:, j)));
+        s_norm(:, j) = s(:, j) - d(:, j) * (s(:, j).' * d(:, j) / norm(d(:, j))^2);
     end
     state_predicted = [d_norm; s_norm];
     
@@ -161,7 +161,7 @@ for iter = 1:frameNumber
                 (Sigma_i(:, :, iTrack)^-1*mio_i(:, iTrack) + Sigma_v(:, :, vMeasurement)^-1*mio_v(:, vMeasurement));
             
             C1_iv(iTrack, vMeasurement) = log(det(Sigma_iv(:, :, iTrack, vMeasurement)))...
-                                        - log(8*pi^3*det(Sigma_i(:, :, iTrack))*det(Sigma_v(:, :, vMeasurement)));
+                                        - log(8*(pi^3)*det(Sigma_i(:, :, iTrack))*det(Sigma_v(:, :, vMeasurement)));
             C2_iv(iTrack, vMeasurement) = mio_iv(:, iTrack, vMeasurement)' * Sigma_iv(:, :, iTrack, vMeasurement)^-1 *...
                                           mio_iv(:, iTrack, vMeasurement);
             C3_iv(iTrack, vMeasurement) = mio_i(:, iTrack)' * Sigma_i(:, :, iTrack)^-1 * mio_i(:, iTrack);
@@ -170,19 +170,20 @@ for iter = 1:frameNumber
             omega_iv(iTrack, vMeasurement) = exp(0.5*(C1_iv(iTrack, vMeasurement) + C2_iv(iTrack, vMeasurement) - ...
                                                  C3_iv(iTrack, vMeasurement) - C4_iv(iTrack, vMeasurement)));
                                              
-            Prob_lambdav_Ci(iTrack, vMeasurement) = omega_iv(iTrack, vMeasurement); % it should be calculacted for all i and v
+            Prob_lambdav_Ci(iTrack, vMeasurement) = omega_iv(iTrack, vMeasurement); 
         end
     end
  
-    mu_Inactive = 0.1; % reconsider
-    sigma_Inactive = 0.0025; % reconsider
-    Prob_LAMBDA_Inactive = @(LAMBDA) pdf('Normal', LAMBDA, mu_Inactive, sigma_Inactive);
-    
-    mu_Active = 0.2; % reconsider
-    sigma_Active = 0.0025; % reconsider
+    mu_Inactive = 0.1; 
+    sigma_Inactive = 0.0025;
+%     Prob_LAMBDA_Inactive = @(LAMBDA) (1/sqrt(2*pi*sigma_Inactive^2))*(exp(-(LAMBDA - mu_Inactive)^2/ (2*sigma_Inactive^2)));
+    Prob_LAMBDA_Inactive = @(LAMBDA) pdf(makedist('Normal','mu',mu_Inactive,'sigma',sigma_Inactive), LAMBDA);
+
+    mu_Active = 0.2; 
+    sigma_Active = 0.0025;
     Prob_LAMBDA_Active = @(LAMBDA)  pdf('Normal', LAMBDA, mu_Active, sigma_Active);
     
-    Prob_LAMBDA_Diffused = 0.5;  % reconsider
+    Prob_LAMBDA_Diffused = 0.005;  % reconsider
     
     Prob_ksiv_fgv = zeros(size(Fg, 1), nMeasurement);
     for g = 1:size(Fg, 1)
@@ -200,7 +201,7 @@ for iter = 1:frameNumber
         end
     end
     
-    Prob_KSI_Fg = prod(Prob_ksiv_fgv, 2);
+    Prob_KSI_Fg = prod(Prob_ksiv_fgv, 2) ;
     
     % Prior probability(Step E)
     P_new = 0.1; % reconsider
@@ -238,7 +239,7 @@ for iter = 1:frameNumber
     end
     
     for iTrack = 1:nTarget
-        ind_g = logical(prod(~(Fg == 1), 2));
+        ind_g = logical(sum(Fg == iTrack, 2) >= 1);
         Prob_i_KSI(iTrack) = sum(Prob_Fg_KSI(ind_g));
     end
     
@@ -249,7 +250,7 @@ for iter = 1:frameNumber
     % Update (Step H)
     for iTrack = 1:nTarget
         K(:, :, iTrack) = P_predicted(:, :, iTrack) * H' * ( H*P_predicted(:, :, iTrack)*H' + R )^-1; % Kalman gain
-        [~, vhat(iTrack)] = max(Prob_i_KSI);
+        [~, vhat(iTrack)] = max(Prob_i_KSIv(iTrack, :));
         
         
         state_posterior(:, iTrack) = state_predicted(:, iTrack) + Prob_i_KSI(iTrack) * K(:, :, iTrack) * ( estPosition(iter, :, vhat(iTrack)).' - H*state_predicted(:, iTrack) );
