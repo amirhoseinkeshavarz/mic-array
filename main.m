@@ -5,7 +5,7 @@ close all
 targetPositionIndx = [46 10];
 targetNum = length(targetPositionIndx);
 P = [1 1];
-frameLength = 2000;
+frameLength = 10000;
 frameNumber = 10;
 
 initialParams
