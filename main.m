@@ -27,6 +27,7 @@ TDMPs = reshape(TDMPs , size(TDMPs,1) * size(TDMPs,2),[]);
 voiceImport
 microphoneDirectivity
 targetPosition = spacePoints(targetPositionIndx,:);
+MSWCalib;
 movement = 1*[0.09 -0.005 +0.01; -0.005 +0.09 +0.001];
 % for t = 1:targetNum
 %     targetMovement(t,:,:) = [linspace(0,movement(t,1),frameNumber).' linspace(0,movement(t,2),frameNumber).' linspace(0,movement(t,3),frameNumber).']';
@@ -60,6 +61,7 @@ for f = 1:frameNumber
     targetPosition = targetPosition + movement;
 end
 [indMax Ed]
+
 for ii = 1:targetNum
     estPosition(:,:,ii) = spacePoints(indMax(:,ii),:);
 end
