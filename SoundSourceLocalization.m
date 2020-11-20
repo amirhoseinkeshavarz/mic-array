@@ -18,25 +18,15 @@ for l = 1:targetNum
     pqCrossCorrelationMswFilter(:,[1:end/2-99, end/2+100:end]) = [];
     [~,targetTDMP] = max(pqCrossCorrelationMswFilter.');
     targetTDMP = (targetTDMP - 100).';
-    for kk = 1:size(TDMPs,2)
-        if ~isempty(TDMPs(zeta(:,kk),kk))
-            correlation(kk) = 1./sum((TDMPs(zeta(:,kk),kk) - targetTDMP(zeta(:,kk))).^2).^0.5;
-        else
-            correlation(kk) = 0;
-        end
-    end
-
-%         correlation = 1./sum((TDMPs - targetTDMP).^2).^0.5;
-    [~ , indMax(f,l)] = max(abs(correlation));
-    estimatedPosition = [x(indMax(f,l)),y(indMax(f,l)),z(indMax(f,l))];
-%     plot3(estimatedPosition(:, 1), estimatedPosition(:, 2), estimatedPosition(:, 3), 'bv', 'MarkerFaceColor', 'blue')
+    
+    hierarchicalSearch;
     
     for ll = 1:micNum
-        signal1(ll,:) = circshift(signal(ll,:),TDMPs(ll,indMax(f,l)));
+        signal1(ll,:) = circshift(signal(ll,:),TDMPsFine(ll,indMaxFine(f,l)));
     end
     signal11 = mean(signal1,1);
     for ll = 1:micNum
-        signal22(ll,:) = circshift(signal11,-TDMPs(ll,indMax(f,l)));
+        signal22(ll,:) = circshift(signal11,-TDMPsFine(ll,indMaxFine(f,l)));
     end
     signal = signal - signal22;
     Ed(f,l) = sqrt(sum(abs(signal11.^2)));
