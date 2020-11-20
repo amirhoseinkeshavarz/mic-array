@@ -11,4 +11,3 @@ voice16K = voice48K(1:ds:end,:); % downsample from 48KS/s to 16 KS/s
 voice16K = reshape(voice16K,frameLength,frameNumber,size(voice16K,2));
 fs = fs/ds;
 
-% sound(voice16K(:,1),fs)
