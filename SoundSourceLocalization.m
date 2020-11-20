@@ -1,4 +1,5 @@
 for l = 1:targetNum
+    % equation 3 from paper
     FFT = fft(signal,[],2);
     FFTRep = repmat(FFT,micNum,1);
     FFTRepNorm = sqrt(sum(FFTRep.^2,2));
@@ -10,9 +11,11 @@ for l = 1:targetNum
     end
     FFTNorm = FFTsNorm .* FFTRepNorm;
     pqCrossCorrelation = fftshift(ifft(FFTs .* conj(FFTRep)./(FFTNorm),[],2),2);
+    
+    % equation 22 from paper
     MSWFilter;
+    
     pqCrossCorrelationMswFilter(:,[1:end/2-99, end/2+100:end]) = [];
-
     [~,targetTDMP] = max(pqCrossCorrelationMswFilter.');
     targetTDMP = (targetTDMP - 100).';
     for kk = 1:size(TDMPs,2)
@@ -40,29 +43,3 @@ for l = 1:targetNum
 end
 
 clear signal
-%% Target Localization 2
-%{
-for l = 1:targetNum
-    FFT = fft(signal,[],2);
-    FFTRep = repmat(FFT,micNum,1);
-    FFTRepNorm = sqrt(sum(FFTRep.^2,2));
-    FFTs = [];
-    FFTsNorm = [];
-    for ii = 1:micNum
-        FFTs = [FFTs; FFTRep(ii:micNum:end,:)];
-        FFTsNorm = [FFTsNorm ; FFTRepNorm(ii:micNum:end)];
-    end
-    FFTNorm = FFTsNorm .* FFTRepNorm;
-    FFTCorr = FFTs .* conj(FFTRep)./(FFTNorm);
-    for nn = 1:size(TDMPs,2)
-        Rij1 = FFTCorr .* exp(1i* 2*pi * TDMPs(:,nn)*(0:size(FFTs,2)-1)/size(FFTs,2));
-        Rij(:,nn) = sum(Rij1,2);
-    end
-    
-    Ed = sum(abs(Rij));
-    [targetEnergy(l),indMax(l)] = max(Ed);
-    
-    TDMPs(:,IndMax(l)) = zeros(size(TDMPs,1),1);
-end
-indMax
-%}

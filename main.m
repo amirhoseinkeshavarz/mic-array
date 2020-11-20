@@ -57,6 +57,7 @@ for f = 1:frameNumber
     %% Target Localization 1
     
     SoundSourceLocalization
+    
     targetPositionAll(f, :, :) = targetPosition;
     targetPosition = targetPosition + movement;
 end
