@@ -1,7 +1,6 @@
 
 pq.crossStd = micVariance * eye(3);
 
-
 delatTauPq = zeros(micNum^2,1);
 vuProbability = zeros(micNum,size(u,1));
 pqStar = [];

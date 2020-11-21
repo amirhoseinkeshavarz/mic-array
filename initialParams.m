@@ -14,7 +14,7 @@ micPosition = arrayRadius * [cos(theta), sin(theta), zeros(length(theta), 1)];
 micPosition = micPosition + sqrt(micVariance) * randn(size(micPosition));
 
 %% creating test points
-spacePointCoarseNum = 10*4^L + 2;
+spacePointCoarseNum = 10*4^L + 2; %
 [spacePointsCoarse, fMatCoarse] = spheretri(spacePointCoarseNum);
 zMinusCoarse = spacePointsCoarse(:,3)<0;
 spacePointsCoarse(zMinusCoarse,:) = []; 

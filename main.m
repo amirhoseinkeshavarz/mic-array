@@ -14,6 +14,7 @@ Display
 
 %% Time Difference of Microphone Pairs (TDMP)
 
+% equation 12 of paper
 TDMPsCoarse = zeros(size(micPosition, 1), size(micPosition, 1), size(spacePointsCoarse, 1));
 for i = 1:size(micPosition, 1)
     for j = 1:size(micPosition, 1)

@@ -9,7 +9,7 @@ for iU = 1:size(u,1)
                 pq.deltaTau = delatTauPq(iP * iQ); % initial value is zero (step2 of Algorithm1)
                 
                 % equation 21 of paper
-                pq.tauEstimated = fs/muC * dot((micPosition(iP,:) - micPosition(iQ,:)) , octagonXyz(iOctagon,:));
+                pq.tauEstimated = round(fs/muC * dot((micPosition(iP,:) - micPosition(iQ,:)) , octagonXyz(iOctagon,:)));
                 
                 % equation 23 of paper
                 alpha = pq.tauEstimated - pq.deltaTau - 0.5;
