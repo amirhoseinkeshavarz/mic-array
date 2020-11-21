@@ -5,8 +5,8 @@ close all
 targetPositionIndx = [46 10];
 targetNum = length(targetPositionIndx);
 P = [1 1];
-frameLength = 2000;
-frameNumber = 10;
+frameLength = 5000;
+frameNumber = 16;
 
 initialParams
 
@@ -14,19 +14,35 @@ Display
 
 %% Time Difference of Microphone Pairs (TDMP)
 
-TDMPs = zeros(size(micPosition, 1), size(micPosition, 1), size(spacePoints, 1));
+% equation 12 of paper
+TDMPsCoarse = zeros(size(micPosition, 1), size(micPosition, 1), size(spacePointsCoarse, 1));
 for i = 1:size(micPosition, 1)
     for j = 1:size(micPosition, 1)
-        TDMPs(i, j, :) = round((fs/c)*dot(repmat(micPosition(i, :) - micPosition(j, :), size(spacePoints, 1), 1) , spacePoints, 2));
+        TDMPsCoarse(i, j, :) = round((fs/c)*dot(repmat(micPosition(i, :) - micPosition(j, :)...
+            , size(spacePointsCoarse, 1), 1) , spacePointsCoarse, 2));
     end
 end
-TDMPs = reshape(TDMPs , size(TDMPs,1) * size(TDMPs,2),[]);
+TDMPsCoarse = reshape(TDMPsCoarse , size(TDMPsCoarse,1) * size(TDMPsCoarse,2),[]);
+
+TDMPsFine = zeros(size(micPosition, 1), size(micPosition, 1), size(spacePointsFine, 1));
+for i = 1:size(micPosition, 1)
+    for j = 1:size(micPosition, 1)
+        TDMPsFine(i, j, :) = round((fs/c)*dot(repmat(micPosition(i, :) - micPosition(j, :)...
+            , size(spacePointsFine, 1), 1) , spacePointsFine, 2));
+    end
+end
+TDMPsFine = reshape(TDMPsFine , size(TDMPsFine,1) * size(TDMPsFine,2),[]);
 
 %% Target Modelling
 
 voiceImport
+
 microphoneDirectivity
-targetPosition = spacePoints(targetPositionIndx,:);
+
+targetPosition = spacePointsCoarse(targetPositionIndx,:);
+
+MSWCalib;
+
 movement = 1*[0.09 -0.005 +0.01; -0.005 +0.09 +0.001];
 % for t = 1:targetNum
 %     targetMovement(t,:,:) = [linspace(0,movement(t,1),frameNumber).' linspace(0,movement(t,2),frameNumber).' linspace(0,movement(t,3),frameNumber).']';
@@ -52,16 +68,17 @@ for f = 1:frameNumber
         signal = signal + P(t) * temp;
     end
     
-    
     %% Target Localization 1
     
     SoundSourceLocalization
+    
     targetPositionAll(f, :, :) = targetPosition;
     targetPosition = targetPosition + movement;
 end
-[indMax Ed]
+[indMaxFine Ed]
+
 for ii = 1:targetNum
-    estPosition(:,:,ii) = spacePoints(indMax(:,ii),:);
+    estPosition(:,:,ii) = spacePointsFine(indMaxFine(:,ii),:);
 end
 nTarget = size(estPosition, 3);
 nMeasurement = size(estPosition, 3);
