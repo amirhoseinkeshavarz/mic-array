@@ -108,7 +108,7 @@ R_prob = sigma2_R_Prob*eye(3);
 % initial state
 state_initial = [squeeze(estPosition(1, :, :)).', movement].';
 for iTarget = 1:nTarget
-    P_initial(:, :, iTarget) = 0.1*eye(6); % what should be its initial value?
+    P_initial(:, :, iTarget) = 0.1*eye(6); 
 end
 
 state_posterior = state_initial;
@@ -116,13 +116,13 @@ P_posterior = P_initial;
 nTarget; % this should be set during tracking
 nMeasurement; % this should be set during tracking
 for iter = 1:frameNumber
-    plot3(squeeze(estPosition(iter, 1, 1)), squeeze(estPosition(iter, 2, 1)), squeeze(estPosition(iter, 3, 1)), 'mv', 'MarkerFaceColor', 'm')
-    plot3(squeeze(estPosition(iter, 1, 2)), squeeze(estPosition(iter, 2, 2)), squeeze(estPosition(iter, 3, 2)), 'cv', 'MarkerFaceColor', 'c')
-
-    plot3(state_posterior(1, 1), state_posterior(2, 1), state_posterior(3, 1), 'mo', ...
-          'MarkerFaceColor', [0.25 0.34 0.28], 'MarkerSize', 8)
-    plot3(state_posterior(1, 2), state_posterior(2, 2), state_posterior(3, 2), 'co', ...
-             'MarkerFaceColor', [0.85 0.3 0.1], 'MarkerSize', 8)
+%     plot3(squeeze(estPosition(iter, 1, 1)), squeeze(estPosition(iter, 2, 1)), squeeze(estPosition(iter, 3, 1)), 'mv', 'MarkerFaceColor', 'm')
+%     plot3(squeeze(estPosition(iter, 1, 2)), squeeze(estPosition(iter, 2, 2)), squeeze(estPosition(iter, 3, 2)), 'cv', 'MarkerFaceColor', 'c')
+% 
+%     plot3(state_posterior(1, 1), state_posterior(2, 1), state_posterior(3, 1), 'mo', ...
+%           'MarkerFaceColor', [0.25 0.34 0.28], 'MarkerSize', 8)
+%     plot3(state_posterior(1, 2), state_posterior(2, 2), state_posterior(3, 2), 'co', ...
+%              'MarkerFaceColor', [0.85 0.3 0.1], 'MarkerSize', 8)
     state_posteriorAll(:, :, iter) = state_posterior;
 
     % Prediction(Step A)
@@ -267,22 +267,22 @@ for iter = 1:frameNumber
     
 end
 
-% plot3(squeeze(state_posteriorAll(1, 1, :)), squeeze(state_posteriorAll(2, 1, :)), ...
-%     squeeze(state_posteriorAll(3, 1, :)), 'm-o', 'MarkerFaceColor', [0.25 0.34 0.28], ...
-%     'MarkerSize', 8, 'DisplayName', 'Track1')
-%                                         
-% plot3(squeeze(state_posteriorAll(1, 2, :)), squeeze(state_posteriorAll(2, 2, :)), ...
-%     squeeze(state_posteriorAll(3, 2, :)), 'c-o', 'MarkerFaceColor', [0.85 0.3 0.1], ...
-%     'MarkerSize', 8, 'DisplayName', 'Track2')
-% 
-% 
-% plot3(squeeze(estPosition(:, 1, 1)), squeeze(estPosition(:, 2, 1)), squeeze(estPosition(:, 3, 1)), 'mv', 'MarkerFaceColor', 'm', 'DisplayName', 'estimated position 1')
-% plot3(squeeze(estPosition(:, 1, 2)), squeeze(estPosition(:, 2, 2)), squeeze(estPosition(:, 3, 2)), 'cv', 'MarkerFaceColor', 'c', 'DisplayName', 'estimated position 2')
-% 
-% plot3(squeeze(targetPositionAll(:, 1, 1)), squeeze(targetPositionAll(:, 1, 2)), squeeze(targetPositionAll(:, 1, 3)), 'm-p', 'MarkerFaceColor', 'm', 'DisplayName', 'target location 1') ; axis equal
-% plot3(squeeze(targetPositionAll(:, 2, 1)), squeeze(targetPositionAll(:, 2, 2)), squeeze(targetPositionAll(:, 2, 3)), 'c-p', 'MarkerFaceColor', 'c', 'DisplayName', 'target location 2') ;
-% 
-% legend('show')
+plot3(squeeze(state_posteriorAll(1, 1, :)), squeeze(state_posteriorAll(2, 1, :)), ...
+    squeeze(state_posteriorAll(3, 1, :)), 'm-o', 'MarkerFaceColor', [0.25 0.34 0.28], ...
+    'MarkerSize', 8, 'DisplayName', 'Track1')
+                                        
+plot3(squeeze(state_posteriorAll(1, 2, :)), squeeze(state_posteriorAll(2, 2, :)), ...
+    squeeze(state_posteriorAll(3, 2, :)), 'c-o', 'MarkerFaceColor', [0.85 0.3 0.1], ...
+    'MarkerSize', 8, 'DisplayName', 'Track2')
+
+
+plot3(squeeze(estPosition(:, 1, 1)), squeeze(estPosition(:, 2, 1)), squeeze(estPosition(:, 3, 1)), 'mv', 'MarkerFaceColor', 'm', 'DisplayName', 'estimated position 1')
+plot3(squeeze(estPosition(:, 1, 2)), squeeze(estPosition(:, 2, 2)), squeeze(estPosition(:, 3, 2)), 'cv', 'MarkerFaceColor', 'c', 'DisplayName', 'estimated position 2')
+
+plot3(squeeze(targetPositionAll(:, 1, 1)), squeeze(targetPositionAll(:, 1, 2)), squeeze(targetPositionAll(:, 1, 3)), 'm-p', 'MarkerFaceColor', 'm', 'DisplayName', 'target location 1') ; axis equal
+plot3(squeeze(targetPositionAll(:, 2, 1)), squeeze(targetPositionAll(:, 2, 2)), squeeze(targetPositionAll(:, 2, 3)), 'c-p', 'MarkerFaceColor', 'c', 'DisplayName', 'target location 2') ;
+
+legend('show')
 
 
 
