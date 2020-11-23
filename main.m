@@ -159,11 +159,15 @@ for iter = 1:frameNumber
     state_predicted = [d_norm; s_norm];
     
     % Assignment(Step C)
-    assignment_alphabet = [-2, -1, 1:nTarget];
-    assignment_alphabet = [assignment_alphabet, assignment_alphabet];
-    Fg = perms(assignment_alphabet);
-    Fg = Fg(:, 1:2);
+    
+    alphabet = [-2, -1, 1:nTarget];
+    alphabetFolded = alphabet;
+    for i = 1:nMeasurement - 1
+       alphabetFolded = [alphabetFolded, alphabet]; 
+    end
+    Fg = nchoosek(alphabetFolded, nMeasurement);
     Fg = unique(Fg, 'rows');
+    
     
     % Likelihood(Step D)
     
